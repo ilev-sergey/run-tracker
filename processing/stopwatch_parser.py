@@ -1,5 +1,6 @@
-from datetime import datetime, date, timedelta
 import re
+from datetime import date, datetime, timedelta
+
 from dateutil.parser import parse
 
 
