@@ -1,6 +1,7 @@
 from aiogram import F, Router
 from aiogram.types import Message, ReplyKeyboardRemove
-from datetime import timedelta
+
+from processing import database
 from processing.stopwatch_parser import get_lap_times, get_timestamp
 
 router = Router()
@@ -15,10 +16,13 @@ async def stopwatch_message(message: Message):
         except:
             await message.answer("Incorrect data format. Please try again")
         else:
-	        sum_time = timedelta()
-	        for lap_time in lap_times:
-	            sum_time += lap_time
+            total_distance = get_total_distance(lap_times)
+            total_laps = get_laps_number(lap_times)
+            total_time = get_total_time(lap_times)
+            await database.add_user_data(
+                user_id=message.from_user.id, timestamp=timestamp, lap_times=lap_times
+            )
 	        await message.answer(
-	            f"Congratulations! You have run {len(lap_times)} laps in {sum_time.seconds // 60} minutes and {sum_time.seconds % 60} seconds",
+	            f"Congratulations! You have run {total_laps} laps ({total_distance} km) in {total_time.seconds // 60} minutes and {total_time.seconds % 60} seconds.",
 	            reply_markup=ReplyKeyboardRemove(remove_keyboard=True),
 	        )
