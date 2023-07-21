@@ -8,7 +8,7 @@ from processing.analytics import (
     get_total_distance,
     get_total_time,
 )
-from processing.stopwatch_parser import get_lap_times, get_timestamp
+from processing.stopwatch_parser import get_lap_times, get_start_time
 
 router = Router()
 
@@ -17,7 +17,7 @@ router = Router()
 async def stopwatch_message(message: Message):
     if message.text and message.from_user:  # TODO: use filter
         try:
-            timestamp = get_timestamp(message.text)
+            start_time = get_start_time(message.text)
             lap_times = get_lap_times(message.text)
         except:
             await message.answer("Incorrect data format. Please try again")
@@ -27,7 +27,7 @@ async def stopwatch_message(message: Message):
             total_laps = get_laps_number(lap_times)
             total_time = get_total_time(lap_times)
             await database.add_user_data(
-                user_id=message.from_user.id, timestamp=timestamp, lap_times=lap_times
+                user_id=message.from_user.id, start_time=start_time, lap_times=lap_times
             )
             await message.answer_photo(
                 BufferedInputFile(

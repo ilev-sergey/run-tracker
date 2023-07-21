@@ -8,17 +8,19 @@ with conn:
         """
         CREATE TABLE IF NOT EXISTS lap_times (
             user_id INT,
-            timestamp TEXT,
+            start_time TEXT,
             lap_time TEXT
         )
         """
     )
 
 
-async def add_user_data(user_id: int, timestamp: datetime, lap_times: list[timedelta]):
-    records = [[user_id, timestamp, str(lap_time)] for lap_time in lap_times]
+async def add_user_data(user_id: int, start_time: datetime, lap_times: list[timedelta]):
+    records = [
+        [user_id, start_time, "0" + str(lap_time)[:-3]] for lap_time in lap_times
+    ]  # HH:MM:SS.fff
     with conn:
         cur.executemany(
-            f"INSERT INTO lap_times VALUES (?, ?, ?)",
+            "INSERT INTO lap_times VALUES (?, ?, ?)",
             records,
         )
