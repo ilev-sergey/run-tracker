@@ -1,13 +1,11 @@
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
+def dict_factory(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict[str, Any]:
+    fields = [column[0] for column in cursor.description]
+    return {key: value for key, value in zip(fields, row)}
 
 
 conn = sqlite3.connect("users_data.db")
@@ -39,7 +37,7 @@ async def add_user_data(user_id: int, start_time: datetime, lap_times: list[time
 async def avg_for_period(
     user_id: int, period_in_days: int = 10_000
 ) -> Optional[dict[str, Union[str, float]]]:
-    with conn, open("processing/queries/avg_for_period.sql") as query_file:
+    with conn, open("processors/queries/avg_for_period.sql") as query_file:
         result = cur.execute(
             query_file.read(), {"user_id": user_id, "period": period_in_days}
         ).fetchone()

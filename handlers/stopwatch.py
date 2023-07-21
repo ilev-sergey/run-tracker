@@ -1,14 +1,14 @@
 from aiogram import F, Router
 from aiogram.types import BufferedInputFile, Message, ReplyKeyboardRemove
 
-from processing import database
-from processing.analytics import (
+from parsers.stopwatch import get_lap_times, get_start_time
+from processors import database
+from processors.stopwatch import (
     get_laps_number,
     get_plot_buffer,
     get_total_distance,
     get_total_time,
 )
-from processing.stopwatch_parser import get_lap_times, get_start_time
 
 router = Router()
 

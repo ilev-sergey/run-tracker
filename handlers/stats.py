@@ -5,7 +5,7 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from processing import database
+from processors import database
 
 router = Router()
 
