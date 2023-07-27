@@ -12,7 +12,7 @@ def get_start_time(message: str) -> datetime:
 def get_lap_times(message: str) -> list[timedelta]:
     lap_times = [
         datetime.strptime(lap_time, "%M:%S.%f").time()
-        for lap_time in re.findall("\+([^ ]*)", message)
+        for lap_time in re.findall("\\+([^ ]*)", message)
     ]  # find all lap_times, convert to time object
     lap_times = [
         datetime.combine(date.min, lap_time) - datetime.min for lap_time in lap_times
