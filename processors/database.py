@@ -23,11 +23,14 @@ with conn:
     )
 
 
-async def run_query(query_filename: str, data: dict[Any, Any]) -> Optional[dict]:
-    with conn, open(f"processors/queries/{query_filename}") as query_file:
-        result = await cur.execute(query_file.read(), data).fetchone()
-        if all(result.values()):
-            return result
+async def run_query(query: str, data: dict[Any, Any]) -> Optional[dict]:
+    if query.endswith(".sql"):  # if query is .sql file, read query
+        with open(f"processors/queries/{query}") as query_file:
+            query = query_file.read()
+    with conn:
+        result = cur.execute(query, data).fetchone()
+    if isinstance(result, dict) and all(result.values()) is not None:
+        return result
 
 
 async def add_user_data(user_id: int, start_time: datetime, lap_times: list[timedelta]):
@@ -45,6 +48,6 @@ async def avg_for_period(
     user_id: int, period_in_days: int = 10_000
 ) -> Optional[dict[str, Union[str, float]]]:
     return await run_query(
-        query_filename="avg_for_period.sql",
+        query="avg_for_period.sql",
         data={"user_id": user_id, "period": period_in_days},
     )
