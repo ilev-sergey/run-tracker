@@ -37,7 +37,7 @@ async def run_query(query: str, data: dict[Any, Any]) -> Optional[dict]:
             query = query_file.read()
     with conn:
         result = cur.execute(query, data).fetchone()
-    if isinstance(result, dict) and all(result.values()) is not None:
+    if isinstance(result, dict) and all(result.values()):
         return result
 
 
