@@ -6,7 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config_reader import config
 from filters.chat_type import ChatTypeFilter
-from handlers import control, stats, stopwatch
+from handlers import control, stats, stopwatch, utc_offset
 
 
 async def main():
@@ -16,7 +16,9 @@ async def main():
 
     dp = Dispatcher(storage=MemoryStorage())
     dp.message.filter(ChatTypeFilter(chat_type=["private", "group", "supergroup"]))
-    dp.include_routers(control.router, stats.router, stopwatch.router)
+    dp.include_routers(
+        control.router, utc_offset.router, stats.router, stopwatch.router
+    )
 
     # await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())

@@ -21,6 +21,14 @@ with conn:
         )
         """
     )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_timezones (
+            user_id INT PRIMARY KEY,
+            timezone INT
+        )
+        """
+    )
 
 
 async def run_query(query: str, data: dict[Any, Any]) -> Optional[dict]:
@@ -33,7 +41,32 @@ async def run_query(query: str, data: dict[Any, Any]) -> Optional[dict]:
         return result
 
 
+async def set_user_timezone(user_id: int, timezone: int) -> None:
+    db_timezone = await get_user_timezone(user_id)
+    if db_timezone == timezone:
+        return
+    hours_delta = -timezone if db_timezone is None else -(timezone - db_timezone)
+    await update_start_time(user_id=user_id, hours_delta=hours_delta)
+    await run_query(
+        query="INSERT OR REPLACE INTO user_timezones VALUES(:user_id, :timezone)",
+        data={"user_id": user_id, "timezone": timezone},
+    )
+
+
+async def get_user_timezone(user_id: int) -> Optional[int]:
+    result = await run_query(
+        query="SELECT timezone FROM user_timezones WHERE user_id = :user_id",
+        data={"user_id": user_id},
+    )
+
+    return result["timezone"] if result else None
+
+
 async def add_user_data(user_id: int, start_time: datetime, lap_times: list[timedelta]):
+    timezone = await get_user_timezone(user_id)
+    if timezone:  # if timezone was defined by user
+        start_time -= timedelta(hours=timezone)  # convert to UTC
+
     records = [
         [user_id, start_time, "0" + str(lap_time)[:-3]] for lap_time in lap_times
     ]  # HH:MM:SS.fff
@@ -50,4 +83,11 @@ async def avg_for_period(
     return await run_query(
         query="avg_for_period.sql",
         data={"user_id": user_id, "period": period_in_days},
+    )
+
+
+async def update_start_time(user_id: int, hours_delta: int) -> None:
+    await run_query(
+        query="UPDATE lap_times SET start_time=DATETIME(start_time, :hours_delta || ' hours')",
+        data={"user_id": user_id, "hours_delta": hours_delta},
     )
