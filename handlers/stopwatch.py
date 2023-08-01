@@ -34,6 +34,6 @@ async def stopwatch_message(message: Message):
                     plot_buffer.read(),
                     filename="Run_tracker_plot.png",
                 ),
-                caption=f"Congratulations! You have run {total_laps} laps ({total_distance} km) in {total_time.seconds // 60} minutes and {total_time.seconds % 60} seconds.",
+                caption=f"Congratulations! You have run {total_laps} laps ({total_distance:.1f} km) in {total_time.seconds // 60} minutes and {total_time.seconds % 60} seconds.",
                 reply_markup=ReplyKeyboardRemove(remove_keyboard=True),
             )

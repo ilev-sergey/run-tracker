@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 
 
 def dict_factory(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict[str, Any]:

@@ -10,13 +10,7 @@ from keyboards.confirmation import get_yes_no_kb
 from keyboards.days import get_days_kb
 from parsers.activity import get_lap_times
 from processors import database
-from processors.stopwatch import (
-    get_laps_number,
-    get_plot_buffer,
-    get_total_distance,
-    get_total_time,
-)
-from states import Activity
+from states import AddingActivity
 
 router = Router()
 
@@ -27,11 +21,11 @@ async def cmd_add_activity(message: Message, state: FSMContext):
         f"Choose date of activity or enter it manually in DD.MM.YYYY format.",
         reply_markup=get_days_kb(),
     )
-    await state.set_state(Activity.entering_date)
+    await state.set_state(AddingActivity.entering_date)
 
 
 @router.message(
-    Activity.entering_date,
+    AddingActivity.entering_date,
     F.text.regexp(r"(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[012]).(19|20)[0-9]{2}").as_(
         "date"
     ),
@@ -42,12 +36,11 @@ async def date_entered(message: Message, state: FSMContext, date: Match[str]):
         f"Enter time in HH:MM format.",
         reply_markup=ReplyKeyboardRemove(),
     )
-
-    await state.set_state(Activity.entering_time)
+    await state.set_state(AddingActivity.entering_time)
 
 
 @router.message(
-    Activity.entering_time,
+    AddingActivity.entering_time,
     F.text.regexp(r"(0[0-9]|1[0-9]|2[0-3])[:.][0-5][0-9]").as_("time"),
 )
 async def time_entered(message: Message, state: FSMContext, time: Match[str]):
@@ -55,11 +48,11 @@ async def time_entered(message: Message, state: FSMContext, time: Match[str]):
     await message.answer(
         f"Enter your lap times in MM:SS or MM:SS.SSS format.",
     )
-    await state.set_state(Activity.entering_lap_times)
+    await state.set_state(AddingActivity.entering_lap_times)
 
 
 @router.message(
-    Activity.entering_lap_times,
+    AddingActivity.entering_lap_times,
     F.text.regexp(r"(\S*(\d{2}:\d{2}|\d{2}:\d{2}.\d{2, 3}))+"),
 )
 async def lap_times_entered(
@@ -97,7 +90,7 @@ async def result_confirmed(message: Message, state: FSMContext):
         )
         await message.answer(
             f"The activity has been added!",
-            reply_markup=ReplyKeyboardRemove(),
+            reply_markup=ReplyKeyboardRemove(remove_keyboard=True),
         )
         await state.clear()
 
@@ -107,6 +100,6 @@ async def result_unconfirmed(message: Message, state: FSMContext):
     await message.answer(
         f"The result hasn't been confirmed.\nRe-enter lap times "
         f"or use /add_activity to start from scratch, or /cancel to cancel adding an activity",
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=ReplyKeyboardRemove(remove_keyboard=True),
     )
     await state.set_state(Activity.entering_lap_times)

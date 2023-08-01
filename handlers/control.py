@@ -18,5 +18,6 @@ async def cmd_start(message: Message):
 @router.message(Command("cancel"))
 async def cmd_cancel(message: Message):
     await message.answer(
-        "Action canceled", reply_markup=ReplyKeyboardRemove(remove_keyboard=True)
+        "Action canceled",
+        reply_markup=ReplyKeyboardRemove(),
     )
