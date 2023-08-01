@@ -68,7 +68,14 @@ async def add_user_data(user_id: int, start_time: datetime, lap_times: list[time
         start_time -= timedelta(hours=timezone)  # convert to UTC
 
     records = [
-        [user_id, start_time, "0" + str(lap_time)[:-3]] for lap_time in lap_times
+        [
+            user_id,
+            start_time,
+            "0"
+            + str(lap_time).split(".")[0]
+            + f"{lap_time.microseconds/10**6:.3f}"[1:],
+        ]
+        for lap_time in lap_times
     ]  # HH:MM:SS.fff
     with conn:
         cur.executemany(
