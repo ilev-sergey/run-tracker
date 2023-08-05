@@ -31,7 +31,7 @@ async def cmd_add_activity(message: Message, state: FSMContext):
     ),
 )
 async def date_entered(message: Message, state: FSMContext, date: Match[str]):
-    await state.update_data(date=date.string)
+    await state.update_data(date=date.group())
     await message.answer(
         f"Enter time in HH:MM format.",
         reply_markup=ReplyKeyboardRemove(),
@@ -44,7 +44,7 @@ async def date_entered(message: Message, state: FSMContext, date: Match[str]):
     F.text.regexp(r"(0[0-9]|1[0-9]|2[0-3])[:.][0-5][0-9]").as_("time"),
 )
 async def time_entered(message: Message, state: FSMContext, time: Match[str]):
-    await state.update_data(time=time.string)
+    await state.update_data(time=time.group())
     await message.answer(
         f"Enter your lap times in MM:SS or MM:SS.SSS format.",
     )
