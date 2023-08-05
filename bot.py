@@ -1,11 +1,10 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config_reader import config
-from filters.chat_type import ChatTypeFilter
 from handlers import activity, control, stats, stopwatch, utc_offset
 
 
@@ -15,7 +14,11 @@ async def main():
     bot = Bot(token=config.bot_token.get_secret_value())
 
     dp = Dispatcher(storage=MemoryStorage())
-    dp.message.filter(ChatTypeFilter(chat_type=["private", "group", "supergroup"]))
+    dp.message.filter(
+        F.chat.type.in_({"private", "group", "supergroup"}),
+        F.from_user,
+        F.text,
+    )
     dp.include_routers(
         control.router,
         utc_offset.router,
