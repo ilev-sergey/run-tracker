@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile, Message, ReplyKeyboardRemove
 
 from filters.activity import isLapTimesMessage
-from keyboards.days import get_days_kb
+from keyboards.days import day_buttons, get_days_kb
 from processors import database
 from processors.activity import Activity
 from states import AddingActivity
@@ -46,6 +46,21 @@ async def cmd_add_activity(message: Message, state: FSMContext):
 )
 async def date_entered(message: Message, state: FSMContext, date: Match[str]):
     await state.update_data(date=date.group())
+    await message.answer(
+        f"Enter time in HH:MM format.",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    await state.set_state(AddingActivity.entering_time)
+
+
+@router.message(
+    AddingActivity.entering_date,
+    F.text.in_(list(day_buttons.keys())),
+)
+async def date_entered(message: Message, state: FSMContext):
+    current_date = datetime.now().date()
+    date = current_date + timedelta(days=day_buttons[message.text])
+    await state.update_data(date=datetime.strftime(date, "%d.%m.%Y"))
     await message.answer(
         f"Enter time in HH:MM format.",
         reply_markup=ReplyKeyboardRemove(),
