@@ -1,12 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Match
 
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import BufferedInputFile, Message, ReplyKeyboardRemove
+from aiogram.types import BufferedInputFile, CallbackQuery, Message, ReplyKeyboardRemove
 
 from filters.activity import isLapTimesMessage
+from keyboards.calendar import CalendarCallbackFactory, get_calendar_kb
 from keyboards.days import day_buttons, get_days_kb
 from processors import database
 from processors.activity import Activity
@@ -33,7 +34,7 @@ async def _send_activity_info(message: Message, lap_times: list[timedelta]):
 async def cmd_add_activity(message: Message, state: FSMContext):
     await message.answer(
         f"Choose date of activity or enter it manually in DD.MM.YYYY format.",
-        reply_markup=get_days_kb(),
+        reply_markup=get_calendar_kb(),
     )
     await state.set_state(AddingActivity.entering_date)
 
@@ -53,19 +54,78 @@ async def date_entered(message: Message, state: FSMContext, date: Match[str]):
     await state.set_state(AddingActivity.entering_time)
 
 
-@router.message(
+@router.callback_query(
     AddingActivity.entering_date,
-    F.text.in_(list(day_buttons.keys())),
+    CalendarCallbackFactory.filter(F.action == "change_month"),
 )
-async def date_entered(message: Message, state: FSMContext):
-    current_date = datetime.now().date()
-    date = current_date + timedelta(days=day_buttons[message.text])
-    await state.update_data(date=datetime.strftime(date, "%d.%m.%Y"))
-    await message.answer(
+async def callbacks_change_month(
+    callback: CallbackQuery, callback_data: CalendarCallbackFactory
+):
+    month = callback_data.month
+    year = callback_data.year
+    if month == 12 and callback_data.change == 1:
+        month = 1
+        year += 1
+    elif month == 1 and callback_data.change == -1:
+        month = 12
+        year -= 1
+    else:
+        month += callback_data.change
+    await callback.message.edit_text(
+        f"Choose date of activity or enter it manually in DD.MM.YYYY format.",
+        reply_markup=get_calendar_kb(
+            month=month,
+            year=year,
+        ),
+    )
+    await callback.answer()
+
+
+@router.callback_query(
+    AddingActivity.entering_date, CalendarCallbackFactory.filter(F.action == "ignore")
+)
+async def callbacks_ignore(
+    callback: CallbackQuery, callback_data: CalendarCallbackFactory
+):
+    await callback.answer()
+
+
+@router.callback_query(
+    AddingActivity.entering_date,
+    CalendarCallbackFactory.filter(F.action == "choose_day"),
+)
+async def callbacks_choose_day(
+    callback: CallbackQuery, state: FSMContext, callback_data: CalendarCallbackFactory
+):
+    chosen_date = date(
+        year=callback_data.year, month=callback_data.month, day=callback_data.day
+    )
+    await state.update_data(date=datetime.strftime(chosen_date, "%d.%m.%Y"))
+    await callback.message.edit_text(
+        text=f"Chosen {datetime.strftime(chosen_date, '%d %b %Y')}",
+        reply_markup=None,
+    )
+    await callback.message.answer(
         f"Enter time in HH:MM format.",
         reply_markup=ReplyKeyboardRemove(),
     )
     await state.set_state(AddingActivity.entering_time)
+    await callback.answer()
+
+
+# @router.message(
+#     AddingActivity.entering_date,
+#     F.text.in_(list(day_buttons.keys())),
+# )
+# async def date_entered(message: Message, state: FSMContext):
+#     current_date = datetime.now().date()
+#     date = current_date + timedelta(days=day_buttons[message.text])
+#     await state.update_data(date=datetime.strftime(date, "%d.%m.%Y"))
+#     await message.answer(
+#         f"Enter time in HH:MM format.",
+#         reply_markup=ReplyKeyboardRemove(),
+#     )
+#     await state.set_state(AddingActivity.entering_time)
 
 
 @router.message(
