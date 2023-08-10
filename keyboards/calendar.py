@@ -9,10 +9,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 class CalendarCallbackFactory(CallbackData, prefix="calendar"):
     action: str
-    year: Optional[int]
-    month: Optional[int]
-    day: Optional[int]
-    change: Optional[int]
+    year: Optional[int] = None
+    month: Optional[int] = None
+    day: Optional[int] = None
+    change: Optional[int] = None
 
 
 def get_calendar_kb(month: Optional[int] = None, year: Optional[int] = None):
