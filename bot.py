@@ -4,6 +4,7 @@ import os
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.fsm.storage.memory import MemoryStorage
+from dotenv import load_dotenv
 
 from handlers import activity, control, stats, stopwatch, utc_offset
 
@@ -11,6 +12,7 @@ from handlers import activity, control, stats, stopwatch, utc_offset
 async def main():
     logging.basicConfig(level=logging.INFO)
 
+    load_dotenv()
     bot = Bot(token=os.environ["TOKEN"])
 
     dp = Dispatcher(storage=MemoryStorage())
