@@ -27,4 +27,20 @@ This is a telegram bot for storing running activities and tracking your progress
 
 ### Docker
 
-To be done
+#### Using Hub image
+
+```
+docker pull nidetag/run-tracker
+```
+```
+docker run --name run-tracker -d -e TOKEN=<YOUR_TOKEN> nidetag/run-tracker
+```
+
+#### Building image
+
+```
+docker build -t run-tracker .
+```
+```
+docker run --name run-tracker -d -e TOKEN=<YOUR_TOKEN> run-tracker
+```

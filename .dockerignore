@@ -1,0 +1,9 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/.env
+**/venv
+
+example.gif
+Dockerfile
+README.md
