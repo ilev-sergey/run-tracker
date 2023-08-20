@@ -1,0 +1,12 @@
+- name: Deploy application
+  hosts: production
+  remote_user: run-tracker
+  tasks:
+    - name: Deploy container
+      docker_container:
+        api_version: 1.43
+        name: run-tracker
+        image: "{{ DOCKERHUB_USERNAME }}/run-tracker"
+        ports: "80:{{ VPS_PORT }}"
+        env:
+          TOKEN: "{{ TELEGRAM_TOKEN }}"
